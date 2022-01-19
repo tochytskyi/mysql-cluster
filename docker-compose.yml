@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  mysql_master:
+    image: mysql:5.7
+    env_file:
+      - ./master/mysql_master.env
+    container_name: "mysql_master"
+    restart: "no"
+    ports:
+      - 5515:3306
+    volumes:
+      - ./master/conf/mysql.conf.cnf:/etc/mysql/conf.d/mysql.conf.cnf
+      - ./master/data:/var/lib/mysql
+    networks:
+      - mysql-cluster
+
+  mysql_slave_1:
+    image: mysql:5.7
+    env_file:
+      - slave_1/mysql_slave.env
+    container_name: "mysql_slave_1"
+    restart: "no"
+    ports:
+      - 5516:3306
+    depends_on:
+      - mysql_master
+    volumes:
+      - ./slave_1/conf/mysql.conf.cnf:/etc/mysql/conf.d/mysql.conf.cnf
+      - ./slave_1/data:/var/lib/mysql
+    networks:
+      - mysql-cluster
+
+  mysql_slave_2:
+    image: mysql:5.7
+    env_file:
+      - slave_2/mysql_slave.env
+    container_name: "mysql_slave_2"
+    restart: "no"
+    ports:
+      - 5517:3306
+    depends_on:
+      - mysql_master
+    volumes:
+      - ./slave_2/conf/mysql.conf.cnf:/etc/mysql/conf.d/mysql.conf.cnf
+      - ./slave_2/data:/var/lib/mysql
+    networks:
+      - mysql-cluster
+
+networks:
+  mysql-cluster:
+    driver: bridge
+
+volumes:
+  mysql-logs:
+    driver: local
